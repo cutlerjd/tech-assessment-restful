@@ -6,38 +6,40 @@ const router = express.Router();
 
 router.post("/", (req, res) => {
     const user: User = new User(req.body as IUser);
-    const errors: string [] = userStore.addUser(user);
+    const errors: string [] = userStore.addNewUser(user);
     if (errors.length === 0 ) {
-        res.send("User added");
+        res.send(userStore.getUserByEmail(user.email));
     } else {
         res.send(errors);
     }
 });
 
-router.patch("/", (req, res) => {
+router.patch("/:id", (req, res) => {
     const user: User = new User(req.body as IUser);
+    user.id = Number(req.params.id);
     const errors: string [] = userStore.editUser(user);
     if (errors.length === 0 ) {
-        res.send("User edited.");
+        res.send(userStore.getUserById(req.params.id));
     } else {
         res.send(errors);
     }
 });
 
-router.delete("/", (req, res) => {
-    res.send("User deleted.");
+router.delete("/:id", (req, res) => {
+    const success: boolean = userStore.removeUserById(req.params.id);
+    res.send( success ? "User deleted." : "User not found.");
 });
 
-router.get("/:email", (req, res) => {
-    const user: User | null = userStore.getUserByEmail(req.params.email);
-    if (user ! == null) {
-        return user;
+router.get("/:id", (req, res) => {
+    const user: User | null = userStore.getUserById(req.params.id);
+    if (user !== null) {
+        res.send(user);
     } else {
-        return "User not found.";
+        res.send("User not found.");
     }
 });
 
-router.post("/:email/activity", (req, res) => {
+router.post("/:id/activity", (req, res) => {
     res.send("Activity posted.");
 });
 
