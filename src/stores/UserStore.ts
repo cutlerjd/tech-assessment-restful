@@ -12,7 +12,7 @@ class UserStore {
      * are strings in array.
      * @param newUser New user to be added.
      */
-    public addUser(newUser: User): string[] {
+    public addNewUser(newUser: User): string[] {
         const errors: string [] = [];
         const emailIsTaken: string | null = this.checkIfEmailTaken(newUser.email);
         // Initial check if user can be added with email address.
@@ -29,8 +29,8 @@ class UserStore {
                 errors.push(phoneValid);
             }
         }
-        if (errors.length !== 0) {
-            this.store.push(newUser);
+        if (errors.length === 0) {
+            this.addUser(newUser);
         }
         return errors;
     }
@@ -38,7 +38,7 @@ class UserStore {
     public editUser(userObj: User): string[] {
         const errors: string [] = [];
         const userIndex = this.store.findIndex((user: User) => {
-            return user.email.toLowerCase() === userObj.email.toLowerCase();
+            return user.id === userObj.id;
         });
         if (userIndex === -1) {
             errors.push("User not found.");
@@ -52,7 +52,7 @@ class UserStore {
                 errors.push(phoneValid);
             }
         }
-        if (errors.length !== 0) {
+        if (errors.length === 0) {
             this.store[userIndex].email = userObj.email;
             this.store[userIndex].password = userObj.password;
             this.store[userIndex].phone = userObj.phone;
@@ -68,6 +68,48 @@ class UserStore {
             return null;
         } else {
             return this.store[userIndex];
+        }
+    }
+
+    public getUserById(idParam: string | number | null | undefined): User | null {
+        if (typeof idParam === "string" || typeof idParam === "number") {
+            const id: number = typeof idParam === "string" ? Number(idParam) : idParam;
+            const userIndex = this.store.findIndex((user: User) => {
+                return user.id === id;
+            });
+            if (userIndex === -1) {
+                return null;
+            } else {
+                return this.store[userIndex];
+            }
+        } else {
+            return null;
+        }
+    }
+
+    public removeUserById(idParam: string | number | null | undefined): boolean {
+        if (typeof idParam === "string" || typeof idParam === "number") {
+            const id: number = typeof idParam === "string" ? Number(idParam) : idParam;
+            const userIndex = this.store.findIndex((user: User) => {
+                return user.id === id;
+            });
+            if (userIndex === -1) {
+                return false;
+            } else {
+                this.store.splice(userIndex, 1);
+                return true;
+            }
+        } else {
+            return false;
+        }
+    }
+
+    private addUser(userObj: User) {
+        if (userObj.id === -1) {
+            /* ID would normally get itself from insertion of the database.
+            This obviously would start to fail if 100 users were removed.*/
+            userObj.id = this.store.length + 100;
+            this.store.push(userObj);
         }
     }
 
@@ -94,7 +136,7 @@ class UserStore {
         if (phone === null) {
             return null;
         } else {
-            const regExPhone = /\d{3}-\d{3})\d{4})/;
+            const regExPhone = /\d{3}-\d{3}-\d{4}/;
             if (regExPhone.test(phone) === false) {
                 return "Phone is not the correct format. ###-###-####";
             } else {
