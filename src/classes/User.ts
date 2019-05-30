@@ -11,6 +11,8 @@ class User implements IUser {
     public password: string;
     public phone?: string | null;
 
+    /* Due to working with Vue reactivity and undefined, I instinctively now avoid
+        'undefined' properties and will set nulls. Bad or good habit... unknown. */
     constructor(u: IUser) {
         this.id = -1;
         this.email = u.email !== undefined ? u.email : "";
